@@ -1,0 +1,164 @@
+{include file="public/_meta" /}
+<title></title>
+</head>
+<body>
+<nav class="breadcrumb">
+	<i class="Hui-iconfont">&#xe67f;</i> 首页 
+	<span class="c-gray en">&gt;</span>商城管理 
+	<span class="c-gray en">&gt;</span> 申请商铺 
+	<a class="btn btn-success radius r" style="margin-left:2px" href="javascript:location.replace(location.href);" title="刷新"> 
+		<i class="Hui-iconfont">&#xe68f;</i>
+	</a>
+</nav>
+<div class="page-container">
+	<div class="text-c">
+	<form class="Huiform" method="get" action="">
+		状态：
+		<span class="select-box inline">
+			<select name="status" class="select">
+				<option value="">全部</option> 
+				<option value="0">打烊了</option>
+				<option value="1">营业中</option> 
+			</select>
+		</span>
+		<input type="text" class="input-text" style="width:150px" placeholder="姓名、编号、手机号" id="" name="keywords" value="{$Request.get.keywords|default=''}">
+		<input type="text" class="input-text" style="width:150px" placeholder="商铺名称" name="mer_name" value="{$Request.get.mer_name|default=''}">
+		<button type="submit" class="btn btn-success radius" id="" name=""><i class="Hui-iconfont">&#xe665;</i> 搜索</button>
+		</form>
+	</div>
+	<div class="cl pd-5 bg-1 bk-gray mt-20">
+		<span class="l">
+			<a href="javascript:;" onclick="create(0,'add','添加商铺')" class="btn btn-primary radius">
+			<i class="Hui-iconfont">&#xe600;</i> 门店</a>
+		</span> 
+		<span class="r">共有数据：<strong>{$list->total()}</strong> 条</span></div>
+	<div class="mt-20">
+	<table class="table table-border  table-hover table-bg table-sort">
+		<thead>
+			<tr class="text-c">
+				<th>开通用户</th>				
+				<th>店铺编号</th>				
+				<th>店铺名称</th>
+				<th>首页推荐</th>
+				<!-- <th>负责人</th> -->
+				<th>相关</th>
+				<th>状态</th>
+				<th>开通时间</th>
+			</tr>
+		</thead>
+		<tbody>
+			{volist name='list' id="vo"}
+				<tr class="text-c">
+					<td>{$vo.user.us_account}</td>
+					<td>{$vo.mer_account}</td>
+					<td>{$vo.mer_name}</td>
+					<td>
+						<select onchange="change('{$vo.id}','mer_is_tui',$(this).val())">
+							<option value="0" {if condition="$vo.mer_is_tui eq 0"}selected{/if}>否</option>
+							<option value="1" {if condition="$vo.mer_is_tui eq 1"}selected{/if}>是</option>
+						</select>
+					</td>
+					<!-- <td>{$vo.mer_owner}</td> -->
+					<td>
+						<a class="ml-5" style="text-decoration:none" onclick="create('{$vo.id}','edit','商铺详情')" title="编辑">编辑</a> |
+						<a class="ml-5" style="text-decoration:none" onclick="cateAdd('{$vo.id}','prod','产品列表')" title="产品列表">产品列表</a> |
+						<a class="ml-5" style="text-decoration:none" onclick="create('{$vo.id}','position','定位')" title="定位">定位</a> |
+						<a class="ml-5" style="text-decoration:none" onclick="cateAdd('{$vo.id}','stage','选择驿站')" title="选择驿站">选择驿站</a> |
+						<a class="ml-5" style="text-decoration:none" onclick="del('{$vo.id}')" title="删除">删除</a>
+					</td>
+					<td>{$vo.status_text} | {$vo.zi_text}</td>					
+					<td>{$vo.mer_add_time}</td>								
+					<td class="td-manage">
+
+						<!-- <a class="ml-5" style="text-decoration:none" onclick="create('{$vo.id}','edit','商铺详情')" title="编辑">
+							<i class="Hui-iconfont">&#xe6df;编辑</i>
+						</a>
+						<a class="ml-5" style="text-decoration:none" onclick="del('{$vo.id}')" title="删除">
+							<i class="Hui-iconfont">&#xe609;删除</i>
+						</a> -->
+
+					</td>
+				</tr>
+			{/volist}
+		</tbody>
+	</table>
+	<div class="pages" style="margin:20px;float: right; ">{$list|raw}</div>
+	</div>
+</div>
+{include file="public/_footer" /}
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript">
+
+$('select[name="status"]').val('{$Request.get.status}');
+
+function create(id,url,key){
+	var url = "{:url('"+url+"')}?id="+id;
+	creatIframe(url,key);
+}
+
+function cateAdd(id,url,key){	
+	var bb = "{:url('"+url+"')}?mer_id="+id;
+	creatIframe(bb,key);
+}
+
+/*--审核驳回*/
+function check(id,value,key){
+	layer.confirm('确定要'+key+'么？', {
+      btn: ['确定', '取消']
+    }, function(index, layero){
+        $.ajax({
+            type: "post",
+            url: "{:url('apply')}",
+            data: {id:id,apply_status:value},
+            success: function(data) {
+             	layer.msg(data.msg);
+             	setTimeout(function(){
+             		location.href = '';
+             	},500);
+            }
+        });
+    });
+}
+
+function change(id,key,value){
+	layer.confirm('确定要改变么？', {
+      btn: ['确定', '取消']
+    }, function(index, layero){
+        $.ajax({
+            type: "post",
+            url: "{:url('index')}",
+            data: {id:id,key:key,value:value},
+            success: function(data) {
+             	layer.msg(data.msg);
+             	if(data.code==0){
+             		setTimeout(function(){
+	             		location.href = '';
+	             	},500);
+             	}
+            }
+        });
+    });
+}
+
+function del(id){
+    layer.confirm('确定要删除么？', {
+      btn: ['确定', '取消']
+    }, function(index, layero){
+        $.ajax({
+            type: "post",
+            url: "del",
+            data: {id:id},
+            success: function(data) {
+                layer.msg(data.msg);
+                if(data.code){
+                    setTimeout(function(){
+                        location.href = '';
+                    },1000);
+                }
+            }
+        });
+    });
+}	
+</script> 
+</body>
+</html>
